@@ -43,8 +43,8 @@ public class AuthorizationServerConfig  extends AuthorizationServerConfigurerAda
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                .withClient(clientName)
-                .secret(passwordEncoder.encode(clientSecret))
+                .withClient("myname")
+                .secret(passwordEncoder.encode("myname"))
                 .scopes("read", "write")
                 .authorizedGrantTypes("password")
                 .accessTokenValiditySeconds(86400);

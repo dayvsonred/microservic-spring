@@ -14,11 +14,8 @@ import java.util.stream.Collectors;
 public class User implements UserDetails, Serializable {
     private static final long serialVersionUID = 1L;
 
-
     private Long id;
     private String name;
-
-
     private String email;
     private String password;
 
@@ -65,12 +62,12 @@ public class User implements UserDetails, Serializable {
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
 
     @Override
