@@ -1,13 +1,18 @@
 package com.devsuperior.hrworker.resources;
 
 import com.devsuperior.hrworker.entities.Worker;
-import com.devsuperior.hrworker.repositories.WorkerRepository;
+import com.devsuperior.hrworker.model.MobileLogs;
+import com.devsuperior.hrworker.model.MongoLogsRequestModel;
+import com.devsuperior.hrworker.repository.MongoLogsRepository;
+import com.devsuperior.hrworker.repository.WorkerRepository;
+import com.devsuperior.hrworker.service.MongoLogsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,10 +37,20 @@ public class WorkerResource {
     @Autowired
     private WorkerRepository repository;
 
+    @Autowired
+    private MongoLogsService mongoLogsService;
+
     @GetMapping(value = "/configs")
     public ResponseEntity<Void> getConfigs() {
         logger.info("CONFIG = " + testConfig);
         return ResponseEntity.noContent().build();
+    }
+
+    /** REQUEST DO MOGO **/
+    @GetMapping(value = "/mongo", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<MobileLogs>> getAllMongo() {
+        logger.info("VEIO MONGO OK _________________________");
+        return ResponseEntity.ok().body(this.mongoLogsService.read());
     }
 
     @GetMapping

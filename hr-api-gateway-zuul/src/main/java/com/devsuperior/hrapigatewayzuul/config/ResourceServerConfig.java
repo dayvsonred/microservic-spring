@@ -26,7 +26,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     private JwtTokenStore tokenStore;
 
     private static final String[] PUBLIC = {
-            "/hr-oauth/oauth/token"
+            "/hr-oauth/oauth/token",
     };
 
     private static final String[] OPERATOR = {
@@ -35,10 +35,10 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private static final String[] ADMIN = {
             "/hr-payroll/**",
-            "/hr-user/**",
-            "/actuator/**",
+            "/hr-oauth/actuator/**",
             "/hr-worker/actuator/**",
-            "/hr-oauth/actuator/**"
+            "/hr-user/**",
+            "/actuator/**"
     };
 
     @Override
@@ -52,7 +52,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         /***.antMatchers(HttpMethod.GET, OPERATOR).hasAnyRole("OPERATOR", "ADMIN") exemple for acess only metodo GET  */
         http.authorizeRequests()
                 .antMatchers(PUBLIC).permitAll()
-                .antMatchers(OPERATOR).hasAnyRole("OPERATOR", "ADMIN")
+                .antMatchers(HttpMethod.GET,OPERATOR).hasAnyRole("OPERATOR", "ADMIN")
                 .antMatchers(ADMIN).hasRole("ADMIN")
                 .anyRequest().authenticated();
         http.cors().configurationSource(corsConfigurationSource());
