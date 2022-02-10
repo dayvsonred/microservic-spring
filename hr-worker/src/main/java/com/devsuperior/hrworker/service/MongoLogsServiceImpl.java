@@ -3,15 +3,21 @@ package com.devsuperior.hrworker.service;
 import com.devsuperior.hrworker.model.MobileLogs;
 import com.devsuperior.hrworker.model.MongoLogsRequestModel;
 import com.devsuperior.hrworker.repository.MongoLogsRepository;
+import com.devsuperior.hrworker.resources.WorkerResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MongoLogsServiceImpl implements MongoLogsService {
+
+    private static Logger logger = LoggerFactory.getLogger(MongoLogsServiceImpl.class);
 
     @Autowired
     private MongoLogsRepository mongoLogsRepository;
@@ -50,5 +56,19 @@ public class MongoLogsServiceImpl implements MongoLogsService {
 
         return deleteMap;
     }
+
+
+    public void updateThisDay () throws InterruptedException {
+        logger.info("In processe _________________________");
+
+        long time =  10;
+        TimeUnit.SECONDS.sleep(time);
+
+        logger.info("FINISH ######################################__");
+
+    }
+
+
+
 
 }
