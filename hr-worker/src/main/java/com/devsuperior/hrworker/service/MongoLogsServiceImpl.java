@@ -1,9 +1,7 @@
 package com.devsuperior.hrworker.service;
 
 import com.devsuperior.hrworker.model.MobileLogs;
-import com.devsuperior.hrworker.model.MongoLogsRequestModel;
 import com.devsuperior.hrworker.repository.MongoLogsRepository;
-import com.devsuperior.hrworker.resources.WorkerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

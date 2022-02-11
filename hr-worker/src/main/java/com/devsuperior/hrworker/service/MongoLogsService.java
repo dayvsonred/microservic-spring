@@ -1,7 +1,6 @@
 package com.devsuperior.hrworker.service;
 
 import com.devsuperior.hrworker.model.MobileLogs;
-import com.devsuperior.hrworker.model.MongoLogsRequestModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

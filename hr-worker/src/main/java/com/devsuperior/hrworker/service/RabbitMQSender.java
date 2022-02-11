@@ -1,5 +1,6 @@
 package com.devsuperior.hrworker.service;
 
+
 import com.devsuperior.hrworker.dto.UpdateLogsMongoDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,48 +23,8 @@ public class RabbitMQSender {
     @Value("${worker.rabbitmq.routingkey}")
     private String routingkey;
 
-    public void send(UpdateLogsMongoDTO menDto) {
+    public void send(Long menDto) {
         rabbitTemplate.convertAndSend(exchange, routingkey, menDto);
         System.out.println("Send msg = " + menDto);
-
     }
-
-
-//    private final RabbitTemplate rabbitTemplate;
-//    private final ObjectMapper objectMapper;
-//
-//    @Value("${api.queue.user.device.routing}")
-//    private String deviceRouting;
-//
-//    @Value("${api.queue.user.device.exchange}")
-//    private String deviceExchange;
-
-//    public DeviceProducer(RabbitTemplate rabbitTemplate, ObjectMapper objectMapper) {
-//        this.rabbitTemplate = rabbitTemplate;
-//        this.objectMapper = objectMapper;
-//    }
-//
-//    public void sendMessageSilently(String cpf, Boolean verified, DeviceRequestDTO deviceRequestDTO) {
-//        try {
-//            MessageProperties props = MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
-//            Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(new DeviceDTO(cpf, verified, deviceRequestDTO))).andProperties(props).build();
-//            rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-//            rabbitTemplate.setExchange(deviceExchange);
-//            rabbitTemplate.setRoutingKey(deviceRouting);
-//            rabbitTemplate.convertAndSend(message);
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e);
-//        }
-//    }
-//
-//    public void sendMessage(String cpf, Boolean verified, DeviceRequestDTO deviceRequestDTO) throws JsonProcessingException {
-//        MessageProperties props = MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
-//        Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(new DeviceDTO(cpf, verified, deviceRequestDTO))).andProperties(props).build();
-//        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-//        rabbitTemplate.setExchange(deviceExchange);
-//        rabbitTemplate.setRoutingKey(deviceRouting);
-//        rabbitTemplate.convertAndSend(message);
-//    }
-
-
 }

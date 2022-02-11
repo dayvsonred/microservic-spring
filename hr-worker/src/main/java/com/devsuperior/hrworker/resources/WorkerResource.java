@@ -3,8 +3,6 @@ package com.devsuperior.hrworker.resources;
 import com.devsuperior.hrworker.dto.UpdateLogsMongoDTO;
 import com.devsuperior.hrworker.entities.Worker;
 import com.devsuperior.hrworker.model.MobileLogs;
-import com.devsuperior.hrworker.model.MongoLogsRequestModel;
-import com.devsuperior.hrworker.repository.MongoLogsRepository;
 import com.devsuperior.hrworker.repository.WorkerRepository;
 import com.devsuperior.hrworker.service.MongoLogsService;
 import com.devsuperior.hrworker.service.MongoLogsServiceImpl;
@@ -66,10 +64,13 @@ public class WorkerResource {
     /** REQUEST DO MOGO  **/
     @GetMapping(value = "/mongo_update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateThisDay() {
+        Integer randomWithMathRandom = (int) ((Math.random() * (10000 - 1)) + 10);
         logger.info("updateThisDay _________________________");
         try{
             //this.mongoLogsServiceImpl.updateThisDay();
-            rabbitMQSender.send(UpdateLogsMongoDTO.builder().go("true teste msg okkkkkkkkoasodaoks").build());
+            //rabbitMQSender.send(UpdateLogsMongoDTO.builder().go("true teste msg okkkkkkkkoasodaoks").build());
+            rabbitMQSender.send(randomWithMathRandom.longValue());
+
         }catch (Exception e){
             logger.info("Exeption ");
         }
