@@ -1,5 +1,6 @@
 package com.devsuperior.hrworker.resources;
 
+import com.devsuperior.hrworker.dto.LogsForDayDTO;
 import com.devsuperior.hrworker.dto.UpdateLogsMongoDTO;
 import com.devsuperior.hrworker.entities.Worker;
 import com.devsuperior.hrworker.model.MobileLogs;
@@ -7,6 +8,7 @@ import com.devsuperior.hrworker.repository.WorkerRepository;
 import com.devsuperior.hrworker.service.MongoLogsService;
 import com.devsuperior.hrworker.service.MongoLogsServiceImpl;
 import com.devsuperior.hrworker.service.RabbitMQSender;
+import com.devsuperior.hrworker.service.RabbitMQSenderLogsMongo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +52,9 @@ public class WorkerResource {
     @Autowired
     private RabbitMQSender rabbitMQSender;
 
+    @Autowired
+    private RabbitMQSenderLogsMongo rabbitMQSenderLogsMongo;
+
     @GetMapping(value = "/configs")
     public ResponseEntity<Void> getConfigs() {
         logger.info("CONFIG = " + testConfig);
@@ -61,7 +68,7 @@ public class WorkerResource {
         return ResponseEntity.ok().body(this.mongoLogsService.read());
     }
 
-    /** REQUEST DO MOGO  **/
+    /** REQUEST DO MOGO  TESTE **/
     @GetMapping(value = "/mongo_update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateThisDay() {
         Integer randomWithMathRandom = (int) ((Math.random() * (10000 - 1)) + 10);
@@ -76,6 +83,22 @@ public class WorkerResource {
         }
         List myObjList = new ArrayList();
         myObjList.add("start update data");
+        return ResponseEntity.ok().body(myObjList);
+    }
+
+    /** REQUEST DO MOGO Start UPDAT DAY **/
+    @GetMapping(value = "/mongo_update_day", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity startUpdateThisDay() {
+        logger.info("startUpdateThisDay _________________________");
+        LocalDate localDate = LocalDate.now();
+        logger.info("localDate is = "+ localDate);
+        try{
+            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().LogProcessedData(localDate.toString()).FinishProcess(false).build());
+        }catch (Exception e){
+            logger.info("Exeption ");
+        }
+        List myObjList = new ArrayList();
+        myObjList.add("start update data " + localDate);
         return ResponseEntity.ok().body(myObjList);
     }
 

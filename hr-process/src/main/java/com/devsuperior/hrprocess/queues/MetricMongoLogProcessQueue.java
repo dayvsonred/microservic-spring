@@ -8,25 +8,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class TestProcessQueue {
+public class MetricMongoLogProcessQueue {
 
-    static final String topicExchangeName = "test.processor.exchange";
+    static final String topicExchangeName = "metrics.mongo.log.update.exchange";
 
-    static final String queueName = "test.processor.queue";
+    static final String queueName = "metrics.mongo.log.update.queue";
 
     @Bean
-    Queue queue() {
+    Queue queueMetrics() {
         return new Queue(queueName, false);
     }
 
     @Bean
-    TopicExchange exchange() {
+    TopicExchange exchangeMetrics() {
         return new TopicExchange(topicExchangeName);
     }
 
     @Bean
-    Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("#");
+    Binding bindingMetrics(Queue queueMetrics, TopicExchange exchangeMetrics) {
+        return BindingBuilder.bind(queueMetrics).to(exchangeMetrics).with("#");
     }
 
 }
