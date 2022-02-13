@@ -1,6 +1,7 @@
 package com.devsuperior.hrprocess.consumer;
 
 import com.devsuperior.hrprocess.dto.LogsForDayDTO;
+import com.devsuperior.hrprocess.dto.LogsForDayRabbitDTO;
 import com.devsuperior.hrprocess.service.MetricsLogsService;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ public class MetricsLogsConsumer {
     private MetricsLogsService metricsLogsService;
 
     @RabbitListener(id = "metrics.mongo.log.update.exchange",queues = {"metrics.mongo.log.update.queue"},concurrency = "2")
-    public void receiver(LogsForDayDTO logsForDayDTO) {
+    public void receiver(LogsForDayRabbitDTO logsForDayDTO) {
         log.info("received Message from rabbit  metrics.mongo.log.update.queue " );
         try {
             this.metricsLogsService.processStarted(logsForDayDTO);

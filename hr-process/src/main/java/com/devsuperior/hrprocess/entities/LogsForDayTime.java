@@ -3,6 +3,7 @@ package com.devsuperior.hrprocess.entities;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.util.Date;
 
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Data
 public class LogsForDayTime implements Serializable {
 
@@ -20,22 +22,20 @@ public class LogsForDayTime implements Serializable {
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     private LogsForDay logsForDayId;
-    private LocalDateTime PeriodStart;
-    private LocalDateTime PeriodEnd;
-    private String Status;
-    private String NumRequests;
+    private LocalDateTime periodStart;
+    private LocalDateTime periodEnd;
+    private String status;
+    private String numRequests;
     private LocalDateTime DataEnd;
 
 
     @CreatedDate
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date", nullable = false)
-    private Date createdDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_updated_date", nullable = false)
-    private Date lastUpdatedDate;
+    private LocalDateTime lastUpdatedDate;
 
     public LogsForDayTime(){
 
