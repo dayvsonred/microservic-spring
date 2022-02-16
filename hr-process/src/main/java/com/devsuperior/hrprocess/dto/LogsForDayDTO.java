@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LogsForDayDTO implements Serializable {
 
+    private Long id;
     private LocalDate logProcessedData;
     private Boolean finishProcess;
     private List<LogsForDayTime> logsForDayTime;

@@ -1,5 +1,6 @@
 package com.devsuperior.hrprocess.service;
 
+import com.devsuperior.hrprocess.dto.LogsForDayDTO;
 import com.devsuperior.hrprocess.dto.LogsForDayRabbitDTO;
 import com.devsuperior.hrprocess.entities.LogsForDay;
 import com.devsuperior.hrprocess.entities.LogsForDayTime;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -38,7 +40,12 @@ public class MetricsLogsService {
     @PersistenceContext
     private EntityManager entityManager;
 
-//    private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private MetricMongoStartLogDayService metricMongoStartLogDayService;
+
+    private final String StatusStartProcess = "PRONTO";
+
+
     @Transactional
     public void processStarted(LogsForDayRabbitDTO logsForDayRabbitDTO) throws JsonProcessingException {
         log.info("processStarted get list of times scan log of this day in message");
@@ -55,7 +62,7 @@ public class MetricsLogsService {
 
             if(BooleanUtils.isFalse(this.existOrderStartGetLog(dateGet))){
                 LogsForDayTime startTimeLog = new LogsForDayTime();
-                startTimeLog.setStatus("PRONTO");
+                startTimeLog.setStatus(StatusStartProcess);
                 startTimeLog.setStart(false);
                 startTimeLog.setPeriodStart(dateTimeGet);
                 startTimeLog.setPeriodEnd(dateTimeEndGet);
@@ -108,36 +115,60 @@ public class MetricsLogsService {
         this.showLogProcess("getLogInTimeOfDay", "Start");
         LocalDate nowDate = LocalDate.now();
         try {
-
-//            LogsForDayTime logsNextTime = entityManager
-//                    .createQuery("SELECT u FROM logs_for_day_time u WHERE u.logs_for_day_id = :logDayId",LogsForDayTime.class)
-//                    .setParameter("logDayId",idDateProcess.toString())
-//                    .getSingleResult();
-            //LogsForDayTime logsNextTime  = query.setParameter(1,idDateProcess).getSingleResult();
-//            LogsForDayTime logsNextTime  = entityManager.createQuery("SELECT u.logs_for_day_id FROM logs_for_day_time u WHERE u.logs_for_day_id = 1",LogsForDayTime.class).getSingleResult();
-//            LogsForDayTime logsNextTime =  logsForDayTimeRepository.getLogsTimeNextProcess(idDateProcess.toString());
-//            LogsForDay logsForDayDTO = logsForDayRepository.findByLogProcessedData(orderDate);
-//            logsForDayDTO.getLogsForDayTime().stream().forEach( logAnyTime -> { });
-
             LogsForDay logsForDayDTO = logsForDayRepository.findById(idDateProcess).orElseThrow(() -> new RuntimeException());
-
-
-
             /**
+             * 0 mais tarde fazer esse da insert em outra lista com o dados para chamada do proximo metodo
              * 1 get mongo doc from time by hour
              * 1.2 salve all doc return on mongo local
              * 2 record salve in local postgre this time and add new time for get process
              * */
             System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-
-
-
-
-
+            LogsForDayTime lofgProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
+                    ob.getStatus().toString().equals(StatusStartProcess) &&
+                            isNull(ob.getDataEnd()) &&
+                            BooleanUtils.isFalse(ob.isStart())).findFirst().orElseThrow(() -> new RuntimeException("Erro try send null date time get logs"));
+            metricMongoStartLogDayService.send(lofgProcess);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         this.showLogProcess("getLogInTimeOfDay", "Finish");
+    }
+
+
+    private LogsForDayTime controlLogByTime(LogsForDayTime dateGetLogs) throws RuntimeException{
+        try {
+            this.getMongoLogByTimeFromDay(dateGetLogs.getPeriodStart(), dateGetLogs.getPeriodEnd());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        throw new RuntimeException();
+    }
+
+
+    private LocalDateTime getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
+        try {
+
+            /**
+             *
+             * decobri como buscar no mongo por data time
+             *
+             *
+             * **/
+
+
+//            db.getCollection('calcard-mobile-app_1_2022').find({
+//                    requestDate:{
+//                '$gte': new Date("2022-01-11T00:00:00.000Z"),
+//                        '$lt': new Date("2022-01-11T23:00:00.000Z")
+//            }
+//            // authentication.userAuthentication.principal.username
+//            //    request: {$elemMatch: {username:'33334573850'}}
+//            }).limit(10);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        throw new RuntimeException();
     }
 
 

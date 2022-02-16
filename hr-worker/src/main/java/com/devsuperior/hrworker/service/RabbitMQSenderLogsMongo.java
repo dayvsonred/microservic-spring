@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 public class RabbitMQSenderLogsMongo {
 
-    private static Logger logger = LoggerFactory.getLogger(WorkerResource.class);
+    private static Logger logger = LoggerFactory.getLogger(RabbitMQSenderLogsMongo.class);
 
     @Autowired
     private AmqpTemplate rabbitTemplate;
