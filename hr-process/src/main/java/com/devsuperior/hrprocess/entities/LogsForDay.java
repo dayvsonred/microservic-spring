@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,8 +30,10 @@ public class LogsForDay implements Serializable {
     private LocalDate logProcessedData;
     private Boolean finishProcess;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "logsForDayId", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LogsForDayTime> logsForDayTime;
+    //@OneToMany(fetch = FetchType.LAZY, mappedBy = "logsForDay", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany( cascade = CascadeType.ALL )
+    @JoinColumn( name = "logs_for_day_id" )
+    private List<LogsForDayTime> logsForDayTime = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_date")

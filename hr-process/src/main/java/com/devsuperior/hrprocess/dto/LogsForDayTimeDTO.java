@@ -17,9 +17,11 @@ import java.util.Date;
 public class LogsForDayTimeDTO implements Serializable {
 
     private LogsForDayDTO logsForDayId;
-    private LocalDateTime PeriodStart;
-    private LocalDateTime PeriodEnd;
-    private String Status;
-    private String NumRequests;
-    private LocalDateTime DataEnd;
+    private boolean start;
+    private Long orden;
+    private LocalDateTime periodStart;
+    private LocalDateTime periodEnd;
+    private String status;
+    private Long numRequests;
+    private LocalDateTime dataEnd;
 }
