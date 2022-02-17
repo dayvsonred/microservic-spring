@@ -1,9 +1,6 @@
 package com.devsuperior.hrprocess.entities;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,8 +15,9 @@ import java.util.List;
 
 
 @Entity
-@Data
-@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@AllArgsConstructor
 @Table(name = "logs_for_day")
 public class LogsForDay implements Serializable {
 
@@ -33,7 +31,7 @@ public class LogsForDay implements Serializable {
     //@OneToMany(fetch = FetchType.LAZY, mappedBy = "logsForDay", cascade = CascadeType.ALL, orphanRemoval = true)
     @OneToMany( cascade = CascadeType.ALL )
     @JoinColumn( name = "logs_for_day_id" )
-    private List<LogsForDayTime> logsForDayTime = new ArrayList<>();
+    private List<LogsForDayTime> logsForDayTime;
 
     @CreatedDate
     @Column(name = "created_date")

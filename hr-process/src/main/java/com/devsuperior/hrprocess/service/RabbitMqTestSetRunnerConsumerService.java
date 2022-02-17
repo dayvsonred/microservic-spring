@@ -17,7 +17,7 @@ public class RabbitMqTestSetRunnerConsumerService {
             //this.regressionRunnerService.runRegressionTestSet(testSetId);
             log.info("completed " + testSetId + " task");
         } catch (Exception e) {
-            log.error("Error on running test set");
+            log.error("Error on running test set test.processor.exchange");
             log.error("Error message : " + ExceptionUtils.getMessage(e));
             log.error("Error trace : " + ExceptionUtils.getStackTrace(e));
         }

@@ -2,8 +2,10 @@ package com.devsuperior.hrprocess.service;
 
 import com.devsuperior.hrprocess.dto.LogsForDayDTO;
 import com.devsuperior.hrprocess.dto.LogsForDayRabbitDTO;
+import com.devsuperior.hrprocess.dto.LogsForDayTimeRabbitDTO;
 import com.devsuperior.hrprocess.entities.LogsForDay;
 import com.devsuperior.hrprocess.entities.LogsForDayTime;
+import com.devsuperior.hrprocess.model.document.MobileLogs;
 import com.devsuperior.hrprocess.repository.LogsForDayRepository;
 import com.devsuperior.hrprocess.repository.LogsForDayTimeRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +22,7 @@ import javax.persistence.TypedQuery;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +45,9 @@ public class MetricsLogsService {
 
     @Autowired
     private MetricMongoStartLogDayService metricMongoStartLogDayService;
+
+    @Autowired
+    private MongoLogsServiceImpl mongoLogsServiceImpl;
 
     private final String StatusStartProcess = "PRONTO";
 
@@ -134,26 +140,49 @@ public class MetricsLogsService {
         this.showLogProcess("getLogInTimeOfDay", "Finish");
     }
 
-
-    private LogsForDayTime controlLogByTime(LogsForDayTime dateGetLogs) throws RuntimeException{
+    public void controlLogByTime(LogsForDayTimeRabbitDTO logsForDayTimeRabbitDTO) throws RuntimeException{
+        this.showLogProcess("controlLogByTime", "Start");
         try {
-            this.getMongoLogByTimeFromDay(dateGetLogs.getPeriodStart(), dateGetLogs.getPeriodEnd());
+            LogsForDayTime logsForDayTime = logsForDayTimeRepository.findById(logsForDayTimeRabbitDTO.getId()).orElseThrow(() -> new RuntimeException());
+            this.getMongoLogByTimeFromDay(logsForDayTime.getPeriodStart(), logsForDayTime.getPeriodEnd());
+
+            /**
+             * 1 get mongo doc from time by hour
+             * 1.2 salve all doc return on mongo local
+             * 2 record salve in local postgre this time and add new time for get process
+             * */
+
+
+
+
+
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        throw new RuntimeException();
+        this.showLogProcess("controlLogByTime", "Finish");
     }
 
 
-    private LocalDateTime getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
+    private List<MobileLogs> getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
         try {
-
+            this.showLogProcess("getMongoLogByTimeFromDay", "Start");
             /**
              *
              * decobri como buscar no mongo por data time
              *
              *
              * **/
+
+            ZoneId zoneId = ZoneId.of("America/Sao_Paulo");  //Zone information
+            ZonedDateTime dateStartZone = dateStart.atZone(zoneId);
+            ZonedDateTime dateEndZone = dateEnd.atZone(zoneId);
+
+
+
+            List<MobileLogs> mobileLogs =  mongoLogsServiceImpl.getLogByInterval222(dateStartZone,dateEndZone);
+
+            //query.addCriteria(Criteria.where("startDate").gte(startDate).lt(endDate));
 
 
 //            db.getCollection('calcard-mobile-app_1_2022').find({
@@ -164,7 +193,8 @@ public class MetricsLogsService {
 //            // authentication.userAuthentication.principal.username
 //            //    request: {$elemMatch: {username:'33334573850'}}
 //            }).limit(10);
-
+            this.showLogProcess("getMongoLogByTimeFromDay", "Start");
+            return mobileLogs;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
