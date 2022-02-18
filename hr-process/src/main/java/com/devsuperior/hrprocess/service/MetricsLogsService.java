@@ -9,6 +9,7 @@ import com.devsuperior.hrprocess.model.document.MobileLogs;
 import com.devsuperior.hrprocess.repository.LogsForDayRepository;
 import com.devsuperior.hrprocess.repository.LogsForDayTimeRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -129,33 +133,32 @@ public class MetricsLogsService {
              * 2 record salve in local postgre this time and add new time for get process
              * */
             System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-            LogsForDayTime lofgProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
+            LogsForDayTime lofProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
                     ob.getStatus().toString().equals(StatusStartProcess) &&
                             isNull(ob.getDataEnd()) &&
-                            BooleanUtils.isFalse(ob.isStart())).findFirst().orElseThrow(() -> new RuntimeException("Erro try send null date time get logs"));
-            metricMongoStartLogDayService.send(lofgProcess);
+                            BooleanUtils.isFalse(ob.isStart())).findFirst().orElseThrow(() -> new RuntimeException("Error try send null date time get logs"));
+            metricMongoStartLogDayService.send(lofProcess);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         this.showLogProcess("getLogInTimeOfDay", "Finish");
     }
 
+    /**
+     * 1 get mongo doc from time by hour
+     * 1.2 salve all document in file
+     * 2 add new get im process read mongo
+     * 3 record salve in local postgre this time and add new time for get process
+     * */
     public void controlLogByTime(LogsForDayTimeRabbitDTO logsForDayTimeRabbitDTO) throws RuntimeException{
         this.showLogProcess("controlLogByTime", "Start");
         try {
             LogsForDayTime logsForDayTime = logsForDayTimeRepository.findById(logsForDayTimeRabbitDTO.getId()).orElseThrow(() -> new RuntimeException());
-            this.getMongoLogByTimeFromDay(logsForDayTime.getPeriodStart(), logsForDayTime.getPeriodEnd());
+            List<MobileLogs> mobileLogs = this.getMongoLogByTimeFromDay(logsForDayTime.getPeriodStart(), logsForDayTime.getPeriodEnd());
 
-            /**
-             * 1 get mongo doc from time by hour
-             * 1.2 salve all doc return on mongo local
-             * 2 record salve in local postgre this time and add new time for get process
-             * */
+            this.saveFileLogsByDate(mobileLogs,logsForDayTime);
 
-
-
-
-
+            /** falta add na fila para iniciar ler aquivo e gerista suces no postigre */
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -167,33 +170,11 @@ public class MetricsLogsService {
     private List<MobileLogs> getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
         try {
             this.showLogProcess("getMongoLogByTimeFromDay", "Start");
-            /**
-             *
-             * decobri como buscar no mongo por data time
-             *
-             *
-             * **/
-
             ZoneId zoneId = ZoneId.of("America/Sao_Paulo");  //Zone information
             ZonedDateTime dateStartZone = dateStart.atZone(zoneId);
             ZonedDateTime dateEndZone = dateEnd.atZone(zoneId);
-
-
-
             List<MobileLogs> mobileLogs =  mongoLogsServiceImpl.getLogByInterval222(dateStartZone,dateEndZone);
-
-            //query.addCriteria(Criteria.where("startDate").gte(startDate).lt(endDate));
-
-
-//            db.getCollection('calcard-mobile-app_1_2022').find({
-//                    requestDate:{
-//                '$gte': new Date("2022-01-11T00:00:00.000Z"),
-//                        '$lt': new Date("2022-01-11T23:00:00.000Z")
-//            }
-//            // authentication.userAuthentication.principal.username
-//            //    request: {$elemMatch: {username:'33334573850'}}
-//            }).limit(10);
-            this.showLogProcess("getMongoLogByTimeFromDay", "Start");
+            this.showLogProcess("getMongoLogByTimeFromDay", "Finish");
             return mobileLogs;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -202,8 +183,42 @@ public class MetricsLogsService {
     }
 
 
+    private Boolean saveFileLogsByDate(List<MobileLogs> mobileLogs, LogsForDayTime logsForDayTime) throws IOException, RuntimeException {
+        LocalDate nowDate = LocalDate.now();
+        try {
+            ObjectMapper Obj = new ObjectMapper();
+            // get Organisation object as a json string
+            String jsonStr = Obj.writeValueAsString(mobileLogs);
+            // Displaying JSON String
+            System.out.println(jsonStr);
 
+            LocalDateTime start = logsForDayTime.getPeriodStart();
+            LocalDateTime end = logsForDayTime.getPeriodEnd();
+            String statDateName = start.getYear()+"_"+start.getMonthValue()+"_"+start.getDayOfMonth()+" H"+start.getHour();
+            String endDateName = end.getYear()+"_"+end.getMonthValue()+"_"+end.getDayOfMonth()+" H"+end.getHour();
+            String nameFile = "mongo_prod_"+ statDateName +" - "+endDateName;
 
+            File file = new File("H:\\\\DADOS_LOGS\\"+nameFile+".txt");
+            if(BooleanUtils.isFalse(file.exists())){
+                System.out.println("File Not Exist... created file"+ nameFile);
+                FileWriter fw = new FileWriter(file);
+                fw.write(jsonStr);
+                fw.flush();
+                fw.close();
+                file.createNewFile();
+            }
+            if(file.exists()){
+                System.out.println("File Created OK "+ nameFile);
+                return true;
+            }
+        } catch (IOException e) {
+            System.out.println("Erro File ");
+            log.error(e.getMessage(), e);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        throw new RuntimeException();
+    }
 
     private LocalDate getDueDateByString(String date){
         LocalDate nowDate = LocalDate.now();
