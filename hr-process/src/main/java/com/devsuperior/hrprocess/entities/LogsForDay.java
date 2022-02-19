@@ -29,7 +29,7 @@ public class LogsForDay implements Serializable {
     private Boolean finishProcess;
 
     //@OneToMany(fetch = FetchType.LAZY, mappedBy = "logsForDay", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OneToMany( cascade = CascadeType.ALL )
+    @OneToMany( cascade = CascadeType.ALL, fetch = FetchType.EAGER )
     @JoinColumn( name = "logs_for_day_id" )
     private List<LogsForDayTime> logsForDayTime;
 

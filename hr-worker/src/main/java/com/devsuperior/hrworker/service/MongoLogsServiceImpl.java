@@ -7,10 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.isNull;
 
 @Service
 public class MongoLogsServiceImpl implements MongoLogsService {
@@ -64,6 +68,22 @@ public class MongoLogsServiceImpl implements MongoLogsService {
 
         logger.info("FINISH ######################################__");
 
+    }
+
+    public LocalDate getDueDateByString(String date){
+        LocalDate nowDate = LocalDate.now();
+        try {
+            if (isNull(date)) {
+                date = LocalDate.now().toString();
+                logger.error("error date is null ************************************");
+            }
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            nowDate =  LocalDate.parse(date, format);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return nowDate;
     }
 
 

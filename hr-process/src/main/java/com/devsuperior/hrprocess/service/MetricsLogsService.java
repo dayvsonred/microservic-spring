@@ -54,49 +54,93 @@ public class MetricsLogsService {
     private MongoLogsServiceImpl mongoLogsServiceImpl;
 
     private final String StatusStartProcess = "PRONTO";
+    private final String StatusConcludeProcess = "CONCLUDE";
 
 
-    @Transactional
+
     public void processStarted(LogsForDayRabbitDTO logsForDayRabbitDTO) throws JsonProcessingException {
         log.info("processStarted get list of times scan log of this day in message");
         this.showLogProcess("processStarted", "Start");
         try {
             LocalDate dateGet = this.getDueDateByString(logsForDayRabbitDTO.getLogProcessedData());
-            String month = dateGet.getMonthValue() >10 ? dateGet.getMonthValue()+"" : "0"+dateGet.getMonthValue();
-            String day = dateGet.getDayOfMonth() >10 ? dateGet.getDayOfMonth()+"" : "0"+dateGet.getDayOfMonth();
-            LocalDateTime dateTimeGet = this.getDateTimeByString(dateGet.getYear()+"-"+month+"-"+day+" 00:00:00" );
-            LocalDateTime dateTimeEndGet = dateTimeGet.plusHours(1);
-
-
-            System.out.println(BooleanUtils.isFalse(this.existOrderStartGetLog(dateGet)));
 
             if(BooleanUtils.isFalse(this.existOrderStartGetLog(dateGet))){
-                LogsForDayTime startTimeLog = new LogsForDayTime();
-                startTimeLog.setStatus(StatusStartProcess);
-                startTimeLog.setStart(false);
-                startTimeLog.setPeriodStart(dateTimeGet);
-                startTimeLog.setPeriodEnd(dateTimeEndGet);
-                startTimeLog.setOrden(1l);
-                startTimeLog.setDataEnd(null);
-                startTimeLog.setNumRequests(null);
-                startTimeLog.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-
-                List<LogsForDayTime> listStartLogs = new ArrayList<>();
-                listStartLogs.add(startTimeLog);
-
                 LogsForDay startLog = new LogsForDay();
                 startLog.setFinishProcess(false);
                 startLog.setLogProcessedData(dateGet);
-                startLog.setLogsForDayTime(listStartLogs);
+                startLog.setLogsForDayTime(this.generate24HourDay(logsForDayRabbitDTO));
                 startLog.setCreatedDate(LocalDateTime.now());
                 LogsForDay saveStartLog = logsForDayRepository.save(startLog);
-                this.getLogInTimeOfDay(saveStartLog.getId());
+                Long idlist  = saveStartLog.getId();
+                //this.getLogInTimeOfDay(saveStartLog.getId());
+                this.goLogInTimeOfDay(startLog);
             }
         } catch (Exception e){
             log.info("Error *******************************************************************");
             log.error(e.getMessage(), e);
         }
         this.showLogProcess("processStarted", "Finish");
+    }
+
+    private void goLogInTimeOfDay(LogsForDay startLog){
+        this.showLogProcess("getLogInTimeOfDay", "Start");
+        LocalDate nowDate = LocalDate.now();
+        try {
+            metricMongoStartLogDayService.send(startLog.getLogsForDayTime().get(0));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        this.showLogProcess("getLogInTimeOfDay", "Finish");
+    }
+
+
+    private List<LogsForDayTime> generate24HourDay(LogsForDayRabbitDTO logsForDayRabbitDTO) throws RuntimeException{
+        try {
+
+            LocalDate dateGet = this.getDueDateByString(logsForDayRabbitDTO.getLogProcessedData());
+            String month = dateGet.getMonthValue() >10 ? dateGet.getMonthValue()+"" : "0"+dateGet.getMonthValue();
+            String day = dateGet.getDayOfMonth() >10 ? dateGet.getDayOfMonth()+"" : "0"+dateGet.getDayOfMonth();
+            LocalDateTime dateTimeGet = this.getDateTimeByString(dateGet.getYear()+"-"+month+"-"+day+" 00:00:00" );
+            LocalDateTime dateTimeEndGet = dateTimeGet.plusHours(1);
+
+            LogsForDayTime startTimeLog = new LogsForDayTime();
+            startTimeLog.setStatus(StatusStartProcess);
+            startTimeLog.setStart(false);
+            startTimeLog.setPeriodStart(dateTimeGet);
+            startTimeLog.setPeriodEnd(dateTimeEndGet);
+            startTimeLog.setOrden(1l);
+            startTimeLog.setDataEnd(null);
+            startTimeLog.setNumRequests(null);
+            startTimeLog.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+
+            List<LogsForDayTime> listStartLogs = new ArrayList<>();
+            listStartLogs.add(startTimeLog);
+
+            for (int i = 1; i <= 23; i++) {
+                System.out.println(i);
+
+                LocalDateTime dateTimeGetLoop = this.getDateTimeByString(dateGet.getYear()+"-"+month+"-"+day+" 00:00:00" );
+                LocalDateTime dateTimeEndGetLoop = dateTimeGetLoop.plusHours(i+1);
+                LocalDateTime dateTimeStartGetLoop = dateTimeGetLoop.plusHours(i);
+
+                LogsForDayTime startTimeLogLoop = new LogsForDayTime();
+
+                startTimeLogLoop.setPeriodStart(dateTimeStartGetLoop);
+                startTimeLogLoop.setPeriodEnd(dateTimeEndGetLoop);
+                startTimeLogLoop.setOrden(Long.valueOf(i));
+                startTimeLogLoop.setStatus(StatusStartProcess);
+                startTimeLogLoop.setStart(false);
+                startTimeLogLoop.setDataEnd(null);
+                startTimeLogLoop.setNumRequests(null);
+                startTimeLogLoop.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+
+                listStartLogs.add(startTimeLogLoop);
+            }
+            return listStartLogs;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        throw new RuntimeException();
     }
 
 
@@ -121,6 +165,7 @@ public class MetricsLogsService {
     /**
      * busca logs por hora de um dia
      * */
+    @Transactional
     private void getLogInTimeOfDay(Long idDateProcess){
         this.showLogProcess("getLogInTimeOfDay", "Start");
         LocalDate nowDate = LocalDate.now();
@@ -132,12 +177,17 @@ public class MetricsLogsService {
              * 1.2 salve all doc return on mongo local
              * 2 record salve in local postgre this time and add new time for get process
              * */
-            System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             LogsForDayTime lofProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
                     ob.getStatus().toString().equals(StatusStartProcess) &&
                             isNull(ob.getDataEnd()) &&
-                            BooleanUtils.isFalse(ob.isStart())).findFirst().orElseThrow(() -> new RuntimeException("Error try send null date time get logs"));
-            metricMongoStartLogDayService.send(lofProcess);
+                            BooleanUtils.isFalse(ob.isStart())).findFirst().get();
+
+            if(isNull(lofProcess)){
+                this.showLogProcess("getLogInTimeOfDay", " Not find more times for get los ******************************* ");
+            }else{
+                this.showLogProcess("getLogInTimeOfDay", " Send MSG get more logs ++++ ");
+                metricMongoStartLogDayService.send(lofProcess);
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -154,18 +204,30 @@ public class MetricsLogsService {
         this.showLogProcess("controlLogByTime", "Start");
         try {
             LogsForDayTime logsForDayTime = logsForDayTimeRepository.findById(logsForDayTimeRabbitDTO.getId()).orElseThrow(() -> new RuntimeException());
+            logsForDayTime.setStart(true);
+            logsForDayTime = logsForDayTimeRepository.save(logsForDayTime);
+
             List<MobileLogs> mobileLogs = this.getMongoLogByTimeFromDay(logsForDayTime.getPeriodStart(), logsForDayTime.getPeriodEnd());
 
             this.saveFileLogsByDate(mobileLogs,logsForDayTime);
 
             /** falta add na fila para iniciar ler aquivo e gerista suces no postigre */
 
+            logsForDayTime.setStatus(StatusConcludeProcess);
+            logsForDayTime.setDataEnd(LocalDateTime.now());
+            logsForDayTime.setNumRequests(Long.valueOf(mobileLogs.size()));
+            logsForDayTimeRepository.save(logsForDayTime);
+
+            /** flush memo */
+            mobileLogs = new ArrayList<>();
+
+            this.getLogInTimeOfDay(logsForDayTime.getLogsForDay().getId());
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         this.showLogProcess("controlLogByTime", "Finish");
     }
-
 
     private List<MobileLogs> getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
         try {
@@ -183,14 +245,10 @@ public class MetricsLogsService {
     }
 
 
-    private Boolean saveFileLogsByDate(List<MobileLogs> mobileLogs, LogsForDayTime logsForDayTime) throws IOException, RuntimeException {
-        LocalDate nowDate = LocalDate.now();
+    private void saveFileLogsByDate(List<MobileLogs> mobileLogs, LogsForDayTime logsForDayTime) throws IOException, RuntimeException {
         try {
             ObjectMapper Obj = new ObjectMapper();
-            // get Organisation object as a json string
             String jsonStr = Obj.writeValueAsString(mobileLogs);
-            // Displaying JSON String
-            System.out.println(jsonStr);
 
             LocalDateTime start = logsForDayTime.getPeriodStart();
             LocalDateTime end = logsForDayTime.getPeriodEnd();
@@ -208,8 +266,8 @@ public class MetricsLogsService {
                 file.createNewFile();
             }
             if(file.exists()){
+                jsonStr = null;
                 System.out.println("File Created OK "+ nameFile);
-                return true;
             }
         } catch (IOException e) {
             System.out.println("Erro File ");
@@ -217,7 +275,6 @@ public class MetricsLogsService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        throw new RuntimeException();
     }
 
     private LocalDate getDueDateByString(String date){

@@ -4,17 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
-@Document(collection = "calcard-mobile-app_2_2022")
+@Document(collection = "mobileLogs")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MobileLogs {
+public class MobileLogslocal {
 
     @Id
     private String _id;

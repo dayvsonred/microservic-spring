@@ -5,19 +5,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.SerializationUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
-public class RabbitMQSenderLogsMongo {
+public class RabbitMQSenderFindLogsMongo {
 
-    private static Logger logger = LoggerFactory.getLogger(RabbitMQSenderLogsMongo.class);
+    private static Logger logger = LoggerFactory.getLogger(RabbitMQSenderFindLogsMongo.class);
 
     @Autowired
     private AmqpTemplate rabbitTemplate;

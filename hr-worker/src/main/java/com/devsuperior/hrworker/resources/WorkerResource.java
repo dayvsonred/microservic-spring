@@ -1,7 +1,6 @@
 package com.devsuperior.hrworker.resources;
 
 import com.devsuperior.hrworker.dto.LogsForDayDTO;
-import com.devsuperior.hrworker.dto.UpdateLogsMongoDTO;
 import com.devsuperior.hrworker.entities.Worker;
 import com.devsuperior.hrworker.model.MobileLogs;
 import com.devsuperior.hrworker.repository.WorkerRepository;
@@ -9,6 +8,7 @@ import com.devsuperior.hrworker.service.MongoLogsService;
 import com.devsuperior.hrworker.service.MongoLogsServiceImpl;
 import com.devsuperior.hrworker.service.RabbitMQSender;
 import com.devsuperior.hrworker.service.RabbitMQSenderLogsMongo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +17,9 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,12 +89,47 @@ public class WorkerResource {
         LocalDate localDate = LocalDate.now();
         logger.info("localDate is = "+ localDate);
         try{
-            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().LogProcessedData(localDate.toString()).FinishProcess(false).build());
+            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().logProcessedData(localDate.toString()).FinishProcess(false).build());
         }catch (Exception e){
             logger.info("Exeption ");
         }
         List myObjList = new ArrayList();
         myObjList.add("start update data " + localDate);
+        return ResponseEntity.ok().body(myObjList);
+    }
+
+    /** PROD REQUEST **/
+    @PostMapping(value = "/mongo_update_day_prod",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity startProcessUpdateDay(@RequestBody LogsForDayDTO logsForDayDTO) {
+        List myObjList = new ArrayList();
+        try{
+            LocalDate localDate = mongoLogsServiceImpl.getDueDateByString(logsForDayDTO.getLogProcessedData());
+            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().logProcessedData(localDate.toString()).FinishProcess(false).build());
+
+            myObjList.add("start update data " + localDate.toString());
+        }catch (Exception e){
+            logger.info("Exception mongo_update_day_prod");
+            logger.error(e.getMessage(), e);
+        }
+        return ResponseEntity.ok().body(myObjList);
+    }
+
+    /** PROD REQUEST **/
+    @PostMapping(value = "/mongo_find_day_prod",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity findProcessUpdateDay(@RequestBody LogsForDayDTO logsForDayDTO) {
+        List myObjList = new ArrayList();
+        try{
+            LocalDate localDate = mongoLogsServiceImpl.getDueDateByString(logsForDayDTO.getLogProcessedData());
+            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().logProcessedData(localDate.toString()).FinishProcess(false).build());
+            myObjList.add("send MSG find data " + localDate.toString());
+        }catch (Exception e){
+            logger.info("Exception mongo_update_day_prod");
+            logger.error(e.getMessage(), e);
+        }
         return ResponseEntity.ok().body(myObjList);
     }
 

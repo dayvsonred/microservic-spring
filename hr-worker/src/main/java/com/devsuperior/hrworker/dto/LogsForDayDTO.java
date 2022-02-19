@@ -1,24 +1,39 @@
 package com.devsuperior.hrworker.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
+import java.util.Objects;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@ToString
 public class LogsForDayDTO implements Serializable {
 
-    private String LogProcessedData;
+    private String logProcessedData;
     private Boolean FinishProcess;
+
+    public LogsForDayDTO(String logProcessedData, Boolean finishProcess) {
+        this.logProcessedData = logProcessedData;
+        FinishProcess = finishProcess;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LogsForDayDTO)) return false;
+        LogsForDayDTO that = (LogsForDayDTO) o;
+        return getLogProcessedData().equals(that.getLogProcessedData()) && getFinishProcess().equals(that.getFinishProcess());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getLogProcessedData(), getFinishProcess());
+    }
+
+    public LogsForDayDTO (){
+
+    }
 }

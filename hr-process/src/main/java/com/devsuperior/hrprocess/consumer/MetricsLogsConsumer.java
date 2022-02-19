@@ -18,7 +18,7 @@ public class MetricsLogsConsumer {
     @Autowired
     private MetricsLogsService metricsLogsService;
 
-    @RabbitListener(id = "metrics.mongo.log.update.exchange",queues = {"metrics.mongo.log.update.queue"},concurrency = "2")
+    @RabbitListener(id = "metrics.mongo.log.update.exchange",queues = {"metrics.mongo.log.update.queue"},concurrency = "1")
     public void receiver(LogsForDayRabbitDTO logsForDayDTO) {
         log.info("received Message from rabbit  metrics.mongo.log.update.queue " );
         try {
