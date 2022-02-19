@@ -4,10 +4,7 @@ import com.devsuperior.hrworker.dto.LogsForDayDTO;
 import com.devsuperior.hrworker.entities.Worker;
 import com.devsuperior.hrworker.model.MobileLogs;
 import com.devsuperior.hrworker.repository.WorkerRepository;
-import com.devsuperior.hrworker.service.MongoLogsService;
-import com.devsuperior.hrworker.service.MongoLogsServiceImpl;
-import com.devsuperior.hrworker.service.RabbitMQSender;
-import com.devsuperior.hrworker.service.RabbitMQSenderLogsMongo;
+import com.devsuperior.hrworker.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +47,10 @@ public class WorkerResource {
 
     @Autowired
     private RabbitMQSenderLogsMongo rabbitMQSenderLogsMongo;
+
+    @Autowired
+    private RabbitMQSenderFindLogsMongo rabbitMQSenderFindLogsMongo;
+
 
     @GetMapping(value = "/configs")
     public ResponseEntity<Void> getConfigs() {
@@ -124,10 +125,10 @@ public class WorkerResource {
         List myObjList = new ArrayList();
         try{
             LocalDate localDate = mongoLogsServiceImpl.getDueDateByString(logsForDayDTO.getLogProcessedData());
-            rabbitMQSenderLogsMongo.send(LogsForDayDTO.builder().logProcessedData(localDate.toString()).FinishProcess(false).build());
+            rabbitMQSenderFindLogsMongo.send(LogsForDayDTO.builder().logProcessedData(localDate.toString()).FinishProcess(false).build());
             myObjList.add("send MSG find data " + localDate.toString());
         }catch (Exception e){
-            logger.info("Exception mongo_update_day_prod");
+            logger.info("Exception mongo_find_day_prod");
             logger.error(e.getMessage(), e);
         }
         return ResponseEntity.ok().body(myObjList);

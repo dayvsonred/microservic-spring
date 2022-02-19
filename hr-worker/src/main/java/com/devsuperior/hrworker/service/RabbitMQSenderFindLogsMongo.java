@@ -20,13 +20,13 @@ public class RabbitMQSenderFindLogsMongo {
 
     private ObjectMapper objectMapper;
 
-    @Value("${worker.rabbitmq.mongolog.exchange}")
+    @Value("${api.rabbitmq.find.log.all.day.exchange}")
     private String exchange;
 
-    @Value("${worker.rabbitmq.mongolog.routingkey}")
+    @Value("${api.rabbitmq.find.log.all.day.key}")
     private String routingkey;
 
-    @Value("${worker.rabbitmq.mongolog.queue}")
+    @Value("${api.rabbitmq.find.log.all.day.queue}")
     private String queue;
 
     public void send(LogsForDayDTO logsForDayDTO) throws JsonProcessingException {

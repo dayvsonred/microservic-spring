@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -177,21 +178,38 @@ public class MetricsLogsService {
              * 1.2 salve all doc return on mongo local
              * 2 record salve in local postgre this time and add new time for get process
              * */
-            LogsForDayTime lofProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
+            Optional<LogsForDayTime> lofProcess = logsForDayDTO.getLogsForDayTime().stream().filter(ob ->
                     ob.getStatus().toString().equals(StatusStartProcess) &&
                             isNull(ob.getDataEnd()) &&
-                            BooleanUtils.isFalse(ob.isStart())).findFirst().get();
+                            BooleanUtils.isFalse(ob.isStart())).findFirst();
 
-            if(isNull(lofProcess)){
-                this.showLogProcess("getLogInTimeOfDay", " Not find more times for get los ******************************* ");
-            }else{
+            if(lofProcess.isPresent()){
                 this.showLogProcess("getLogInTimeOfDay", " Send MSG get more logs ++++ ");
-                metricMongoStartLogDayService.send(lofProcess);
+                LogsForDayTime lofProcessSend = lofProcess.get();
+                metricMongoStartLogDayService.send(lofProcessSend);
+            }else{
+                this.showLogProcess("getLogInTimeOfDay", " Not find more times for get los ******************************* ");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         this.showLogProcess("getLogInTimeOfDay", "Finish");
+    }
+
+    public void getFIndTimeOfDay(LogsForDayRabbitDTO logsForDayRabbitDTO) throws RuntimeException{
+        try {
+            this.showLogProcess("getFIndTimeOfDay", "Start");
+            LocalDate dateGet = this.getDueDateByString(logsForDayRabbitDTO.getLogProcessedData());
+            LogsForDay logsForDay = logsForDayRepository.findByLogProcessedData(dateGet);
+            if(isNull(logsForDay)){
+                this.showLogProcess("getFIndTimeOfDay", " Not exist this Day preProcess ******************************* ");
+            }else{
+                this.getLogInTimeOfDay(logsForDay.getId());
+            }
+            this.showLogProcess("getFIndTimeOfDay", "Finish");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -228,6 +246,7 @@ public class MetricsLogsService {
         }
         this.showLogProcess("controlLogByTime", "Finish");
     }
+
 
     private List<MobileLogs> getMongoLogByTimeFromDay(LocalDateTime dateStart,LocalDateTime dateEnd) throws RuntimeException{
         try {
