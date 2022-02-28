@@ -19,6 +19,10 @@ public class MetricMongoFindLogDayConsumer {
     @Autowired
     private MetricsLogsService metricsLogsService;
 
+    /**
+     *  Busca o proximo log PRONTO caso de ERRO NO FLUXO OU PARADA
+     * **/
+
     @RabbitListener(id = "${api.rabbitmq.find.log.all.day.exchange}",queues = {"${api.rabbitmq.find.log.all.day.queue}"},concurrency = "1")
     public void receiver(LogsForDayRabbitDTO objectRabbit) {
         log.info("received Message from --------------- metrics.mongo.find.log.all.queue " );

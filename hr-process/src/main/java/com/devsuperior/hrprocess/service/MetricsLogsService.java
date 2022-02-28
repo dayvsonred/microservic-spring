@@ -102,7 +102,7 @@ public class MetricsLogsService {
             String month = dateGet.getMonthValue() >10 ? dateGet.getMonthValue()+"" : "0"+dateGet.getMonthValue();
             String day = dateGet.getDayOfMonth() >10 ? dateGet.getDayOfMonth()+"" : "0"+dateGet.getDayOfMonth();
             LocalDateTime dateTimeGet = this.getDateTimeByString(dateGet.getYear()+"-"+month+"-"+day+" 00:00:00" );
-            LocalDateTime dateTimeEndGet = dateTimeGet.plusHours(1);
+            LocalDateTime dateTimeEndGet = dateTimeGet.plusMinutes(30);
 
             LogsForDayTime startTimeLog = new LogsForDayTime();
             startTimeLog.setStatus(StatusStartProcess);
@@ -117,12 +117,15 @@ public class MetricsLogsService {
             List<LogsForDayTime> listStartLogs = new ArrayList<>();
             listStartLogs.add(startTimeLog);
 
-            for (int i = 1; i <= 23; i++) {
+            int min = 30;
+            for (int i = 1; i <= 47; i++) {
                 System.out.println(i);
 
                 LocalDateTime dateTimeGetLoop = this.getDateTimeByString(dateGet.getYear()+"-"+month+"-"+day+" 00:00:00" );
-                LocalDateTime dateTimeEndGetLoop = dateTimeGetLoop.plusHours(i+1);
-                LocalDateTime dateTimeStartGetLoop = dateTimeGetLoop.plusHours(i);
+                int minPlusStart = min * i;
+                int minPlusEnd =  min * (i+1);
+                LocalDateTime dateTimeEndGetLoop = dateTimeGetLoop.plusMinutes(minPlusEnd);
+                LocalDateTime dateTimeStartGetLoop = dateTimeGetLoop.plusMinutes(minPlusStart);
 
                 LogsForDayTime startTimeLogLoop = new LogsForDayTime();
 
@@ -224,6 +227,7 @@ public class MetricsLogsService {
             LogsForDayTime logsForDayTime = logsForDayTimeRepository.findById(logsForDayTimeRabbitDTO.getId()).orElseThrow(() -> new RuntimeException());
             logsForDayTime.setStart(true);
             logsForDayTime = logsForDayTimeRepository.save(logsForDayTime);
+            this.showLogProcess("controlLogByTime", "TIME  LOGS " + logsForDayTime.getPeriodStart() +" --------- "+ logsForDayTime.getPeriodEnd() );
 
             List<MobileLogs> mobileLogs = this.getMongoLogByTimeFromDay(logsForDayTime.getPeriodStart(), logsForDayTime.getPeriodEnd());
 
@@ -271,11 +275,11 @@ public class MetricsLogsService {
 
             LocalDateTime start = logsForDayTime.getPeriodStart();
             LocalDateTime end = logsForDayTime.getPeriodEnd();
-            String statDateName = start.getYear()+"_"+start.getMonthValue()+"_"+start.getDayOfMonth()+" H"+start.getHour();
-            String endDateName = end.getYear()+"_"+end.getMonthValue()+"_"+end.getDayOfMonth()+" H"+end.getHour();
-            String nameFile = "mongo_prod_"+ statDateName +" - "+endDateName;
+            String statDateName = start.getYear()+"_"+start.getMonthValue()+"_"+start.getDayOfMonth()+"H"+start.getHour();
+            //String endDateName = end.getYear()+"_"+end.getMonthValue()+"_"+end.getDayOfMonth()+" H"+end.getHour();
+            String nameFile = "mongo_prod_"+logsForDayTime.getId()+"_"+statDateName;
 
-            File file = new File("H:\\\\DADOS_LOGS\\"+nameFile+".txt");
+            File file = new File("H:\\\\DADOS_LOGS\\"+nameFile+".json");
             if(BooleanUtils.isFalse(file.exists())){
                 System.out.println("File Not Exist... created file"+ nameFile);
                 FileWriter fw = new FileWriter(file);

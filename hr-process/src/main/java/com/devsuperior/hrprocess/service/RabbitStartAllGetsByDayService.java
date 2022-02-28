@@ -36,12 +36,12 @@ public class RabbitStartAllGetsByDayService {
     public void send(LogsForDayDTO logsForDayDTO) throws JsonProcessingException {
         try{
             System.out.println("--------> Send RABBIT DTO = " + exchange);
-//            MessageProperties props = MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
-//            Map<String, Object> args = new HashMap<>();
-//            args.put("LogProcessedData", logsForDayDTO.getLogProcessedData());
-//            byte[] bytesOflogsForDayDTO = SerializationUtils.serialize(args);
-//            //Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(logsForDayDTO)).andProperties(props).build();
-//            Message message = MessageBuilder.withBody(bytesOflogsForDayDTO).andProperties(props).build();
+            MessageProperties props = MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
+            Map<String, Object> args = new HashMap<>();
+            args.put("LogProcessedData", logsForDayDTO.getLogProcessedData());
+            byte[] bytesOflogsForDayDTO = SerializationUtils.serialize(args);
+            //Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(logsForDayDTO)).andProperties(props).build();
+            Message message = MessageBuilder.withBody(bytesOflogsForDayDTO).andProperties(props).build();
 
             rabbitTemplate.convertAndSend(exchange, routingkey, logsForDayDTO);
             System.out.println("--------> Send Finish = " );

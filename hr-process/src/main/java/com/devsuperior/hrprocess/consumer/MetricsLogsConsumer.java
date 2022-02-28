@@ -15,6 +15,10 @@ import org.springframework.stereotype.Component;
 public class MetricsLogsConsumer {
     private static Logger log = LoggerFactory.getLogger(MetricsLogsConsumer.class);
 
+    /**
+     * GERA AS HORAS PARA BUSCAR OS LOGS
+     * */
+
     @Autowired
     private MetricsLogsService metricsLogsService;
 

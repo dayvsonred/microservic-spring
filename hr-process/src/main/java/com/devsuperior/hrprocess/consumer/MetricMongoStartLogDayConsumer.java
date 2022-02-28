@@ -18,6 +18,10 @@ public class MetricMongoStartLogDayConsumer {
     @Autowired
     private MetricsLogsService metricsLogsService;
 
+    /***
+     * busca losgs por tempo sempre q tiver um PRONTO NA TABELA
+     * */
+
     @RabbitListener(id = "${api.rabbitmq.start.log.all.day.exchange}",queues = {"${api.rabbitmq.start.log.all.day.queue}"},concurrency = "1")
     public void receiver(LogsForDayTimeRabbitDTO objectRabbit) {
         log.info("received Message from rabbit  metrics.mongo.log.update.queue " );
